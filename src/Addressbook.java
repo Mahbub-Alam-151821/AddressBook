@@ -4,12 +4,10 @@
  */
 
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Scanner;
 
 /**
  *
@@ -22,11 +20,38 @@ public class Addressbook extends javax.swing.JFrame {
      */
     public Addressbook() {
         initComponents();
-        try {
-            file = new File("data.txt");
-            writer = new BufferedWriter(new FileWriter(file,false));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if(file.exists()&&(file.length()!=0)){
+            try {
+                reader = new Scanner(file);
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            while (reader.hasNext()){
+                String n = reader.nextLine();
+                String[] temp  = n.split("~");
+                address.add(new Person(temp[0],temp[1],temp[2],temp[3]));
+
+            }
+            reader.close();
+            try {
+                writer = new BufferedWriter(new FileWriter(file,false));
+                for (Person p:address) {
+                    writer.append(p.getName()+"~");
+                    writer.append(p.getPhone()+"~");
+                    writer.append(p.getEmail()+"~");
+                    writer.append(p.getAddress()+"\n");
+                    writer.flush();}
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+        else{
+            try {
+                writer = new BufferedWriter(new FileWriter(file,false));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -277,9 +302,9 @@ public class Addressbook extends javax.swing.JFrame {
                 emailTextPane.getText(),
                 addressTextPane.getText()));
         try {
-            writer.append(nameTextPane.getText()+"\n");
-            writer.append(phoneTextPane.getText().substring(1)+"\n");
-            writer.append(emailTextPane.getText()+"\n");
+            writer.append(nameTextPane.getText()+"~");
+            writer.append(phoneTextPane.getText().substring(1)+"~");
+            writer.append(emailTextPane.getText()+"~");
             writer.append(addressTextPane.getText()+"\n");
             writer.flush();
         } catch (IOException e) {
@@ -295,14 +320,14 @@ public class Addressbook extends javax.swing.JFrame {
         // TODO add your handling code here:
         if (index==-1){jextArea.setText("Search Something");}else{
             address.set(index, new Person(nameTextPane.getText()
-                    ,phoneTextPane.getText(),emailTextPane.getText(),addressTextPane.getText()));
+                    ,phoneTextPane.getText().substring(1),emailTextPane.getText(),addressTextPane.getText()));
             try {try {file = new File("data.txt");
                     writer = new BufferedWriter(new FileWriter(file,false));
                 } catch (IOException e) {throw new RuntimeException(e);}
                 for (Person p:address) {
-                    writer.append(p.getName()+"\n");
-                    writer.append(p.getPhone()+"\n");
-                    writer.append(p.getEmail()+"\n");
+                    writer.append(p.getName()+"~");
+                    writer.append(p.getPhone()+"~");
+                    writer.append(p.getEmail()+"~");
                     writer.append(p.getAddress()+"\n");
                     writer.flush();}
                 jextArea.setText("Edited");
@@ -323,8 +348,8 @@ public class Addressbook extends javax.swing.JFrame {
         if (address.size()!=0){
             for (Person p:address) {
                 jextArea.append("Name = "+p.getName()+"\n");
-                jextArea.append("Email = "+p.getEmail()+"\n");
                 jextArea.append("Phone = "+"0"+p.getPhone()+"\n");
+                jextArea.append("Email = "+p.getEmail()+"\n");
                 jextArea.append("Address = "+p.getAddress()+"\n");
                 jextArea.append("\n");
             }
@@ -394,9 +419,14 @@ public class Addressbook extends javax.swing.JFrame {
     }
 
     ArrayList<Person> address =new ArrayList<>();
-    private File file;
+    private File file = new File("data.txt");
     private BufferedWriter writer;
+    private Scanner reader;
     int index=-1 ;
+
+
+
+
 
     // Variables declaration - do not modify
     private javax.swing.JTextPane addressTextPane;
